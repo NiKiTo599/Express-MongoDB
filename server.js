@@ -6,6 +6,7 @@ const app = express();
 const routes = require("./app/routes");
 
 const db = require("./config/db");
+const parser = require('./app/parser/parser')
 
 app.use(
   bodyParser.urlencoded({
@@ -13,7 +14,8 @@ app.use(
   })
 );
 
-const client = new MongoClient(db.url, db.connectOptions);
+parser();
+/*const client = new MongoClient(db.url, db.connectOptions);
 
 client.connect((err, client) => {
   if (err) return console.log(err);
@@ -21,4 +23,4 @@ client.connect((err, client) => {
   app.listen(8000, () => {
     console.log("We are live on " + 8000);
   });
-});
+});*/

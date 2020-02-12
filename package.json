@@ -23,9 +23,16 @@
   },
   "homepage": "https://github.com/NiKiTo599/Express-MongoDB#readme",
   "dependencies": {
+    "axios": "^0.19.2",
     "body-parser": "^1.19.0",
+    "cheerio": "^1.0.0-rc.3",
     "express": "^4.17.1",
-    "mongodb": "^3.5.2"
+    "mongodb": "^3.5.2",
+    "needle": "^2.3.2",
+    "query-string": "^6.10.1",
+    "request": "^2.88.2",
+    "tress": "^1.1.4",
+    "url": "^0.11.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.2"
