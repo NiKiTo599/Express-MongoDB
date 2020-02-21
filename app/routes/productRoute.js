@@ -8,7 +8,7 @@ module.exports = function(app, database) {
     /*database
       .collection("products")
       .createIndex({ name: "text" }, { default_language: "russian" });*/
-    const details = { $text: { $search: query } };
+    const details = { $text: { $search: '"' + query + '"' } };
     database
       .collection("products")
       .find(details)
@@ -21,13 +21,25 @@ module.exports = function(app, database) {
         } else if (item.length === 0) {
           database
             .collection("products")
-            .find(
-              { name: { $regex: new RegExp(query, "i") } }
-            )
+            .find({ $text: { $search: query } })
+            .project({ score: { $meta: "textScore" } })
+            .sort({ score: { $meta: "textScore" } })
             .limit(10)
             .toArray((err, item) => {
               if (err) {
-                res.send({ error: "An error has occurred" });
+                res.send({ error: err });
+              } else if (item.length === 0) {
+                database
+                  .collection("products")
+                  .find({ name: { $regex: new RegExp(query, "i") } })
+                  .limit(10)
+                  .toArray((err, item) => {
+                    if (err) {
+                      res.send({ error: "An error has occurred" });
+                    } else {
+                      res.send(item);
+                    }
+                  });
               } else {
                 res.send(item);
               }
@@ -65,5 +77,16 @@ module.exports = function(app, database) {
       .then(item => {
         res.send(JSON.stringify(item));
       });
+  });
+  app.get("/product", (req, res) => {
+    const objOfUrl = queryString.parse(req.url);
+    const details = { _id: new ObjectId(objOfUrl["/product?id"]) };
+    database.collection("products").findOne(details, (err, item) => {
+      if (err) {
+        res.send({ error: "An error has occurred" });
+      } else {
+        res.send(item);
+      }
+    });
   });
 };
