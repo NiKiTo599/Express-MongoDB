@@ -53,6 +53,7 @@ module.exports = function() {
           regular_price: $(".regular_price").text(),
           category_id: new ObjectId("5e2855a6c8d0592360407000"),
           meta_description: title,
+          stock: $('.button_add_to_cart').text(),
           meta_title: title,
           description: Array.from(
             $(".full_product_description>p").map(function() {

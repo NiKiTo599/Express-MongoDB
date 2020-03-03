@@ -10,5 +10,5 @@ module.exports = function(db) {
     });
     db.collection("products").insertMany(products);
   });
-  //db.collection('products').deleteMany({ category_id: '5e2855a6c8d0592360407000'});
+  //db.collection('products').deleteMany({ category_id: new ObjectId('5e2855a6c8d0592360407000')});
 };

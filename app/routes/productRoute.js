@@ -89,4 +89,20 @@ module.exports = function(app, database) {
       }
     });
   });
+  app.get("/productattributes", (req, res) => {
+    const objOfUrl = queryString.parse(req.url);
+    const details = {
+      category_id: new ObjectId(objOfUrl["/productattributes?query"])
+    };
+    database
+      .collection("products")
+      .find(details, { attributes: 1 })
+      .toArray((err, item) => {
+        if (err) {
+          res.send({ error: "An error has occurred" });
+        } else {
+          res.send(item);
+        }
+      });
+  });
 };
