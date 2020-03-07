@@ -67,6 +67,30 @@ module.exports = function(app, database) {
       });
   });
 
+  app.post("/home", (req, res) => {
+    let body = '';
+    req.on('data', function(data) {
+      body += data;
+    });
+    req.on('end', function() {
+      console.log("Body: " + JSON.parse(body));
+      let result = JSON.parse(body)
+      console.log(result['Диагональ'])
+    });
+    /*database
+      .collection("products")
+      .find(details, { score: { $meta: "textScore" } })
+      .limit(10)
+      .skip((objOfUrl.page - 1) * 10)
+      .toArray((err, item) => {
+        if (err) {
+          res.send({ error: "An error has occurred" });
+        } else {
+          res.send(item);
+        }
+      });*/
+  });
+
   app.get("/count", (req, res) => {
     const objOfUrl = queryString.parse(req.url);
     const details = { category_id: new ObjectId(objOfUrl["/count?query"]) };

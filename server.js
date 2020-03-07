@@ -1,28 +1,32 @@
 // server.js
 const express = require("express");
-const MongoClient = require("mongodb").MongoClient;
-const bodyParser = require("body-parser");
+const graphqlHTTP = require("express-graphql");
+const mongoose = require("mongoose");
+const schema = require("./schema/schema");
 const app = express();
+const cors = require("cors");
+
 const routes = require("./app/routes");
-const insertManyProducts = require('./app/routes/insertManyProducts')
+const insertManyProducts = require("./app/routes/insertManyProducts");
 
 const db = require("./config/db");
-const parser = require('./app/parser/parser')
-
-app.use(
-  bodyParser.urlencoded({
-    extended: true
-  })
-);
+const parser = require("./app/parser/parser");
 
 //parser();
-const client = new MongoClient(db.url, db.connectOptions);
+mongoose.connect(db.url, { useNewUrlParser: true, useUnifiedTopology: true });
 
-client.connect((err, client) => {
-  if (err) return console.log(err);
-  routes(app, client.db('test'));
-  //insertManyProducts(client.db('test'))
-  app.listen(8000, () => {
-    console.log("We are live on " + 8000);
-  });
+app.use(cors());
+
+app.use("/graphql", graphqlHTTP({ schema, graphiql: true }));
+
+const dbConnection = mongoose.connection;
+dbConnection.on("error", err => {
+  console.log(`Connection error: ${err}`);
+});
+dbConnection.once("open", () => {
+  console.log("Connected to DB!");
+});
+
+app.listen(8000, err => {
+  err ? console.log(err) : console.log("Server started!");
 });
