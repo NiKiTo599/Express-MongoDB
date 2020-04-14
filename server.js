@@ -13,6 +13,7 @@ const db = require("./config/db");
 const parser = require("./app/parser/parser");
 
 //parser();
+
 mongoose.connect(db.url, { useNewUrlParser: true, useUnifiedTopology: true });
 
 app.use(cors());
@@ -25,6 +26,7 @@ dbConnection.on("error", err => {
 });
 dbConnection.once("open", () => {
   console.log("Connected to DB!");
+  insertManyProducts();
 });
 
 app.listen(8000, err => {

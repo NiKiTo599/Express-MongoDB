@@ -1,10 +1,9 @@
-module.exports = function() {
+module.exports = function () {
   var tress = require("tress");
   var request = require("request");
   var cheerio = require("cheerio");
   var resolve = require("url").resolve;
   var fs = require("fs");
-  const axios = require("axios");
   const ObjectId = require("mongodb").ObjectId;
 
   var URL = "https://tehnocentr.ru/catalog/matricy-v-sbore_47.html";
@@ -14,22 +13,20 @@ module.exports = function() {
 
   // Function for download images
   const downloadImage = (uri, filename, callback) => {
-    request.head(uri, function(err, res, body) {
+    request.head(uri, function (err, res, body) {
       console.log("content-type:", res.headers["content-type"]);
       console.log("content-length:", res.headers["content-length"]);
 
-      request(uri)
-        .pipe(fs.createWriteStream(filename))
-        .on("close", callback);
+      request(uri).pipe(fs.createWriteStream(filename)).on("close", callback);
     });
   };
 
-  const getImagesArrays = urls => {
+  const getImagesArrays = (urls) => {
     const result = [];
     for (const url of urls) {
-      console.log(url)
+      console.log(url);
       let name = `image-${numberForCallImage}`;
-      downloadImage(url, `./data/images/${name}.png`, function() {
+      downloadImage(url, `./data/images/${name}.png`, function () {
         console.log("done");
       });
       result.push({ filename: name });
@@ -38,8 +35,8 @@ module.exports = function() {
     return result;
   };
 
-  var q = tress(function(url, callback) {
-    request(url, function(err, res) {
+  var q = tress(function (url, callback) {
+    request(url, function (err, res) {
       if (err) throw err;
 
       // парсим DOM
@@ -47,44 +44,51 @@ module.exports = function() {
 
       //информация о новости
       const title = $(".product_full_name").text();
-      if (!results.includes(title)) {
+      if (
+        !results.includes(title) &&
+        title !== "" &&
+        title !== " Отвертка универсальная (31 в 1)"
+      ) {
         results.push({
           name: title,
-          regular_price: $(".regular_price").text(),
+          regular_price: Number(
+            $(".regular_price")
+              .text()
+              .replace(/\s+/g, "")
+              .slice(0, $(".regular_price").text().indexOf("р") - 2)
+          ),
           category_id: new ObjectId("5e2855a6c8d0592360407000"),
           meta_description: title,
-          stock: $('.button_add_to_cart').text(),
+          stock: $(".button_add_to_cart").text(),
           meta_title: title,
           description: Array.from(
-            $(".full_product_description>p").map(function() {
+            $(".full_product_description>p").map(function () {
               return $(this).text();
             })
           ),
           attributes: Array.from(
-            $(".tbl_characteristics>.trow").map(function() {
-              return $(this)
-                .text()
-                .trim();
+            $(".tbl_characteristics>.trow").map(function () {
+              return $(this).text().trim();
             })
-          ).map(elem => {
+          ).map((elem) => {
             const arr = elem.split(": ");
             return {
               name: arr[0],
-              value: arr[1]
+              value: arr[1],
             };
           }),
           images: getImagesArrays(
             Array.from(
-              $(".galleryItem").map(function() {
+              $(".galleryItem").map(function () {
                 return resolve(URL, $(this).attr("href"));
               })
             )
-          )
+          ),
         });
       }
 
       //список новостей
-      $(".mt26>a").each(function() {
+      $(".mt26>a").each(function () {
         let url = resolve(URL, $(this).attr("href"));
         console.log(url);
         if (!links.includes(url)) {
@@ -94,7 +98,7 @@ module.exports = function() {
       });
 
       //паджинатор
-      $(".pages_list>div:not(.page_active)>a").each(function() {
+      $(".pages_list>div:not(.page_active)>a").each(function () {
         // не забываем привести относительный адрес ссылки к абсолютному
         let url = resolve(URL, $(this).attr("href"));
         console.log(url);
@@ -108,7 +112,7 @@ module.exports = function() {
     });
   }, 10); // запускаем 10 параллельных потоков
 
-  q.drain = function() {
+  q.drain = function () {
     fs.writeFileSync("./data.json", JSON.stringify(results, null, 4));
   };
 
